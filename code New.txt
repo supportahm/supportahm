@@ -1,0 +1,594 @@
+jsxCopy codeimport React from 'react';
+function Layout({ header, sidebar, content }) {
+  return (
+    <div><header>{header}</header><aside>{sidebar}</aside><main>{content}</main></div>  );
+}function Header() {
+  return <h1>Header</h1>;
+}
+function Sidebar() {
+  return <nav>Sidebar</nav>;
+}
+function Content() {
+  return <section>Main Content</section>;
+}
+function App() {
+  return (
+    <Layoutheader={<Header />}
+      sidebar={<Sidebar />}
+      content={<Content />}
+    />
+  );
+}
+
+export default App;
+
+
+
+
+___________________________________________________________________________________________
+
+
+
+jsxCopy codeimport React, { createContext, useContext, useState } from 'react';
+const ThemeContext = createContext();
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>      {children}    </ThemeContext.Provider>  );
+}function ThemedButton() {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  return (
+    <buttonstyle={{background: theme === 'light' ? '#fff' : '#333',
+        color: theme === 'light' ? '#000' : '#fff',
+      }}      onClick={toggleTheme}
+    >      Toggle Theme    </button>  );
+}function App() {
+  return (
+    <ThemeProvider><ThemedButton /></ThemeProvider>
+  );
+}
+
+export default App;
+ 
+__________________________________________________________________________________________________
+
+
+
+
+
+jsxCopy codeimport React from 'react';
+class DataFetcher extends React.Component {
+  state = { data: null, loading: true };
+
+  componentDidMount() {
+    fetch(this.props.url)
+      .then(response => response.json())
+      .then(data => this.setState({ data, loading: false }));
+  }
+  render() {
+    return this.props.render(this.state);
+  }
+}// Usagefunction App() {
+  return (
+    <DataFetcherurl="https://api.example.com/data"render={({ data, loading }) => {
+        if (loading) return <p>Loading...</p>;
+        return <div>{JSON.stringify(data)}</div>;
+      }}
+    />
+  );
+}
+
+export default App;
+ 
+
+___________________________________________________________________________________
+
+
+jsxCopy codeimport React from 'react';
+function withLoading(Component) {
+  return function WithLoadingComponent({ isLoading, ...props }) {
+    if (isLoading) return <p>Loading...</p>;
+    return <Component {...props} />;
+  };
+}// Usagefunction DataDisplay({ data }) {
+  return <div>{data}</div>;
+}
+const DataDisplayWithLoading = withLoading(DataDisplay);
+function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setData('Hello, World!');
+      setIsLoading(false);
+    }, 2000);
+  }, []);
+
+  return <DataDisplayWithLoading isLoading={isLoading} data={data} />;
+}
+
+export default App;
+ 
+______________________________________________________________________________________
+
+
+jsxCopy codeimport React from 'react';
+function withLoading(Component) {
+  return function WithLoadingComponent({ isLoading, ...props }) {
+    if (isLoading) return <p>Loading...</p>;
+    return <Component {...props} />;
+  };
+}// Usagefunction DataDisplay({ data }) {
+  return <div>{data}</div>;
+}
+const DataDisplayWithLoading = withLoading(DataDisplay);
+function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setData('Hello, World!');
+      setIsLoading(false);
+    }, 2000);
+  }, []);
+
+  return <DataDisplayWithLoading isLoading={isLoading} data={data} />;
+}
+
+export default App;
+ 
+
+____________________________________________________________________________________________
+
+
+
+
+
+dartCopy codeimport 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class CounterProvider extends InheritedWidget {
+  final int count;
+  final Widget child;
+
+  CounterProvider({Key? key, required this.count, required this.child}) : super(key: key, child: child);
+
+  @override
+  bool updateShouldNotify(CounterProvider oldWidget) {
+    return oldWidget.count != count;
+  }
+
+  static CounterProvider? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<CounterProvider>();
+  }
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _count = 0;
+
+  void _increment() {
+    setState(() {
+      _count++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CounterProvider(
+      count: _count,
+      child: MaterialApp(
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text('InheritedWidget Counter'),
+          ),
+          body: CounterScreen(),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _increment,
+            child: Icon(Icons.add),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CounterScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final provider = CounterProvider.of(context);
+
+    return Center(
+      child: Text(
+        '${provider?.count}',
+        style: TextStyle(fontSize: 48),
+      ),
+    );
+  }
+}
+
+___________________________________________________________________
+
+
+
+
+dartCopy codeimport 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => CounterViewModel(),
+      child: MyApp(),
+    ),
+  );
+}
+
+class CounterRepository {
+  int fetchCount() {
+    // Simulate a network or database call
+    return 42;
+  }
+}
+
+class CounterViewModel extends ChangeNotifier {
+  final CounterRepository repository = CounterRepository();
+
+  int _count;
+
+  int get count => _count;
+
+  CounterViewModel() {
+    _count = repository.fetchCount();
+  }
+
+  void increment() {
+    _count++;
+    notifyListeners();
+  }
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CounterScreen(),
+    );
+  }
+}
+
+class CounterScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = Provider.of<CounterViewModel>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Counter'),
+      ),
+      body: Center(
+        child: Text(
+          '${viewModel.count}',
+          style: TextStyle(fontSize: 48),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: viewModel.increment,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+_______________________________________________________________________
+
+
+
+
+
+dartCopy codeimport 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => CounterViewModel(),
+      child: MyApp(),
+    ),
+  );
+}
+
+class CounterViewModel extends ChangeNotifier {
+  int _count = 0;
+
+  int get count => _count;
+
+  void increment() {
+    _count++;
+    notifyListeners();
+  }
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CounterScreen(),
+    );
+  }
+}
+
+class CounterScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = Provider.of<CounterViewModel>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Counter'),
+      ),
+      body: Center(
+        child: Text(
+          '${viewModel.count}',
+          style: TextStyle(fontSize: 48),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: viewModel.increment,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+____________________________________________________________
+
+
+
+dartCopy codeimport 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class CounterCubit extends Cubit<int> {
+  CounterCubit() : super(0);
+
+  void increment() => emit(state + 1);
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: BlocProvider(
+        create: (_) => CounterCubit(),
+        child: CounterScreen(),
+      ),
+    );
+  }
+}
+
+class CounterScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Counter'),
+      ),
+      body: Center(
+        child: BlocBuilder<CounterCubit, int>(
+          builder: (context, count) {
+            return Text(
+              '$count',
+              style: TextStyle(fontSize: 48),
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.read<CounterCubit>().increment(),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+________________________________________________________________
+
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => Counter(),
+      child: MyApp(),
+    ),
+  );
+}
+
+class Counter extends ChangeNotifier {
+  int _count = 0;
+
+  int get count => _count;
+
+  void increment() {
+    _count++;
+    notifyListeners();
+  }
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CounterScreen(),
+    );
+  }
+}
+
+class CounterScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final counter = Provider.of<Counter>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Counter'),
+      ),
+      body: Center(
+        child: Text(
+          '${counter.count}',
+          style: TextStyle(fontSize: 48),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: counter.increment,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+  const ThemeContext = createContext();
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>      {children}    </ThemeContext.Provider>  );
+}function ThemedButton() {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  return (
+    <buttonstyle={{background: theme === 'light' ? '#fff' : '#333',
+        color: theme === 'light' ? '#000' : '#fff',
+      }}      onClick={toggleTheme}
+    >      Toggle Theme    </button>  
+
+class CounterScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = Provider.of<CounterViewModel>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Counter'),
+      ),
+      body: Center(
+        child: Text(
+          '${viewModel.count}',
+          style: TextStyle(fontSize: 48),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: viewModel.increment,
+        child: Icon(Icons.add),
+jsxCopy codeimport React from 'react';
+function Layout({ header, sidebar, content }) {
+  return (
+    <div><header>{header}</header><aside>{sidebar}</aside><main>{content}</main></div>  );
+}function Header() {
+  return <h1>Header</h1>;
+}
+function Sidebar() {
+  return <nav>Sidebar</nav>;
+}
+function Content() {
+  return <section>Main Content</section>;
+}
+function App() {
+
+  const ThemeContext = createContext();
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+  return (
+    <ThemeContext.Provider value={{ theme, 
+
+
+https://subtitletools.com/
+
+
+salwala@isa.ae
+
+
+
+get build(BuildContext context) {
+            final viewModel = Provider.of<CounterViewModel>(context);
+        
+            return Scaffold(
+              appBar: AppBar(
+                title: Text('Counter'),
+              ),
+              body: Center(
+                child: Text(
+                  '${viewModel.count}',
+                  style: TextStyle(fontSize: 48),
+                ),
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: viewModel.increment,
+                child: Icon(Icons.add),
+
+                jsxCopy codeimport React from 'react';
+function Layout({ header, sidebar, content }) {
+  return (
+    <div><header>{header}</header><aside>{sidebar}</aside><main>{content}</main></div>  );
+}function Header() {
+  return <h1>Header</h1>;
+}
+function Sidebar() {
+  return <nav>Sidebar</nav>;
+}
+function Content() {
+  return <section>Main Content</section>;
+}
+function App() {
+
+  const ThemeContext = createContext();
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>      {children}    </ThemeContext.Provider>  );
+}function ThemedButton() {
+  const { theme, toggleTheme } = useC
+
+  function Layout({ header, sidebar, content }) {
+    return (
+      <div><header>{header}</header><aside>{sidebar}</aside><main>{content}</main></div>  );
+  }function Header() {
+    return <h1>Header</h1>;
+  }
+  function Sidebar() {
+    return <nav>Sidebar</nav>;
+  }
+  function Content() {
+    return <section>Main Content</section>;
+  }
+  function App() {
+    return (
+      <Layoutheader={<Header />}
+        sidebar={<Sidebar />}
+        content={<Content />}
+      />
